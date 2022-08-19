@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace App.Migrations
 {
     [DbContext(typeof(FoCoDbContext))]
-    [Migration("20220819080131_InitialMigration")]
+    [Migration("20220819124707_InitialMigration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -23,10 +23,8 @@ namespace App.Migrations
 
             modelBuilder.Entity("App.Entities.Customer", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
@@ -37,7 +35,12 @@ namespace App.Migrations
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("SiteId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex(new[] { "SiteId" }, "Index_SiteId");
 
                     b.ToTable("Customers");
                 });
@@ -49,8 +52,14 @@ namespace App.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("int");
+                    b.Property<string>("CustomerId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
 
                     b.Property<int>("SiteId")
                         .HasColumnType("int");
@@ -60,9 +69,12 @@ namespace App.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CustomerId");
+                    b.HasIndex("CustomerId")
+                        .IsUnique()
+                        .HasFilter("[CustomerId] IS NOT NULL");
 
-                    b.HasIndex(new[] { "SiteId" }, "Index_SiteId");
+                    b.HasIndex(new[] { "SiteId" }, "Index_SiteId")
+                        .HasDatabaseName("Index_SiteId1");
 
                     b.ToTable("Queues");
                 });
@@ -82,16 +94,25 @@ namespace App.Migrations
                     b.ToTable("Sites");
                 });
 
-            modelBuilder.Entity("App.Entities.Queue", b =>
+            modelBuilder.Entity("App.Entities.Customer", b =>
                 {
-                    b.HasOne("App.Entities.Customer", "Customer")
-                        .WithMany()
-                        .HasForeignKey("CustomerId")
+                    b.HasOne("App.Entities.Site", "Site")
+                        .WithMany("Customers")
+                        .HasForeignKey("SiteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Site");
+                });
+
+            modelBuilder.Entity("App.Entities.Queue", b =>
+                {
+                    b.HasOne("App.Entities.Customer", "Customer")
+                        .WithOne("Queue")
+                        .HasForeignKey("App.Entities.Queue", "CustomerId");
+
                     b.HasOne("App.Entities.Site", "Site")
-                        .WithMany("Queues")
+                        .WithMany()
                         .HasForeignKey("SiteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -101,9 +122,14 @@ namespace App.Migrations
                     b.Navigation("Site");
                 });
 
+            modelBuilder.Entity("App.Entities.Customer", b =>
+                {
+                    b.Navigation("Queue");
+                });
+
             modelBuilder.Entity("App.Entities.Site", b =>
                 {
-                    b.Navigation("Queues");
+                    b.Navigation("Customers");
                 });
 #pragma warning restore 612, 618
         }

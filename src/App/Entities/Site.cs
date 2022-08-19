@@ -6,7 +6,6 @@ namespace App.Entities
     {
         public int Id { get; set; } // PK
         public string Name { get; set; }
-        public IEnumerable<Queue> Queues { get; set; }
-       
+        public IEnumerable<Customer> Customers {get; set; }
     }
 }

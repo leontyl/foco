@@ -1,6 +1,7 @@
 using App.Contracts;
 using App.Data;
 using App.Entities;
+using App.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -53,9 +54,11 @@ namespace App
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "App", Version = "v1" });
             });
 
-            services.AddScoped<IRepository<Site>, SiteRepository>();
-            services.AddScoped<IRepository<Queue>, QueueRepository>();
-            services.AddScoped<ICheckInService, ICheckInService>();
+            services.AddScoped<IRepository<Site, int>, SiteRepository>();
+            services.AddScoped<IRepository<Customer, string>, CustomerRepository>();
+            services.AddScoped<IRepository<Queue, int>, QueueRepository>();
+            services.AddScoped<ICheckInService, CheckInService>();
+            services.AddScoped<IActionService, ActionService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
